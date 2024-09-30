@@ -1,0 +1,39 @@
+#Detecting a centroid of a red object in a webcam feed
+import cv2
+
+cap = cv2.VideoCapture(0)
+
+while cap.isOpened():
+    _, frame = cap.read()
+    
+    # Obtaining the size of the frame
+    height, width, _ = frame.shape
+
+    # Create a mask with the color red
+    mask = cv2.inRange(frame, (0, 0, 100), (80, 80, 255))
+
+    # Apply the mask to the frame
+    frame_masked = cv2.bitwise_and(frame, frame, mask=mask)
+
+    frame_2 = frame.copy()
+
+    # Find the centroid of the red object
+    M = cv2.moments(mask)
+    if M['m00'] != 0:
+        cx = int(M['m10']/M['m00'])
+        cy = int(M['m01']/M['m00'])
+        cv2.circle(frame_2, (cx, cy), 5, (0, 0, 255), -1)
+        print(f"Centroid: ({cx}, {cy})")
+        if cx < width/2:
+            cv2.putText(frame_2, "Left", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        else:
+            cv2.putText(frame_2, "Right", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+
+    cv2.imshow('Webcam', frame)
+    cv2.imshow('Mask', mask)
+    cv2.imshow('Masked Webcam', frame_masked)
+    cv2.imshow('Centroid', frame_2)
+
+    if cv2.waitKey(1) & 0xFF == 27: #Press 'ESC' to exit
+        break
